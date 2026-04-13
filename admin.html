@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin - Mk626425@</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <style>
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        body { background: #eee; padding: 20px; }
+    </style>
+</head>
+<body>
+    <div id="auth">
+        <h3>Admin Password डालें:</h3>
+        <input type="password" id="pass">
+        <button onclick="login()">Login</button>
+    </div>
+
+    <div id="panel" style="display:none">
+        <h2>All Referrals & Proofs</h2>
+        <div id="data"></div>
+    </div>
+
+    <script>
+        const firebaseConfig = { 
+            // PASTE_CONFIG_HERE
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        function login() {
+            if(document.getElementById('pass').value === "Mk626425@") {
+                document.getElementById('auth').style.display = "none";
+                document.getElementById('panel').style.display = "block";
+                load();
+            } else { alert("गलत पासवर्ड!"); }
+        }
+
+        function load() {
+            db.collection("leads").onSnapshot(snap => {
+                let h = "<table><tr><th>User UPI</th><th>Screenshot</th><th>Action</th></tr>";
+                snap.forEach(doc => {
+                    h += `<tr>
+                        <td>${doc.data().userUpi}</td>
+                        <td><a href="${doc.data().img}" target="_blank">View</a></td>
+                        <td><button onclick="db.collection('leads').doc('${doc.id}').update({status:'Done'})">Approve</button></td>
+                    </tr>`;
+                });
+                document.getElementById('data').innerHTML = h + "</table>";
+            });
+        }
+    </script>
+</body>
+</html>
