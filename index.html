@@ -3,43 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loot Campaign - Special Offer</title>
+    <title>Loot Campaign - Create</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f4f4; margin: 0; text-align: center; }
-        .header { background: #ff4757; color: white; padding: 15px; font-size: 24px; font-weight: bold; }
-        .container { max-width: 500px; margin: 20px auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        .product-img { width: 100%; border-radius: 10px; }
-        .price { color: #2ed573; font-size: 28px; font-weight: bold; margin: 10px 0; }
-        .old-price { text-decoration: line-through; color: #7f8c8d; font-size: 18px; }
-        .offer-tag { background: #ffa502; color: black; padding: 5px 10px; border-radius: 5px; font-size: 14px; display: inline-block; }
-        .btn-claim { background: #ff4757; color: white; border: none; padding: 15px 30px; font-size: 20px; width: 100%; border-radius: 5px; cursor: pointer; margin-top: 20px; font-weight: bold; }
-        .footer { margin-top: 20px; font-size: 12px; color: #7f8c8d; }
+        :root { --p: #6a2195; }
+        body { background: var(--p); font-family: sans-serif; padding: 15px; margin: 0; }
+        .card { background: white; border-radius: 20px; padding: 20px; max-width: 400px; margin: auto; text-align: center; }
+        input, select { width: 90%; padding: 12px; margin: 10px 0; border: 2px solid var(--p); border-radius: 10px; }
+        button { background: var(--p); color: white; border: none; padding: 12px; width: 100%; border-radius: 25px; cursor: pointer; font-weight: bold; }
+        #linkBox { margin-top: 15px; color: var(--p); word-wrap: break-word; font-weight: bold; padding: 10px; border: 1px dashed var(--p); display: none; }
     </style>
 </head>
 <body>
+    <div class="card">
+        <h2 style="color:var(--p)">Loot Campaign</h2>
+        <select id="offer">
+            <option value="AngelOne">AngelOne (Rs.175)</option>
+            <option value="Upstox">Upstox (Rs.200)</option>
+        </select>
+        <input type="text" id="upi" placeholder="अपनी UPI ID डालें (e.g. name@ybl)">
+        <button onclick="gen()">Generate Link</button>
+        <div id="linkBox"></div>
+    </div>
 
-<div class="header">आज की लूट डील! 🎁</div>
+    <script>
+        const firebaseConfig = { 
+            // PASTE_CONFIG_HERE
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
-<div class="container">
-    <div class="offer-tag">सीमित समय के लिए ऑफर</div>
-    <h2>Smart Watch Series 9</h2>
-    <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=1000" alt="Product" class="product-img">
-    
-    <div class="price">₹0 <span class="old-price">₹4,999</span></div>
-    <p>बस शिपिंग चार्ज भरें और अपनी घड़ी घर ले जाएं!</p>
-    
-    <button class="btn-claim" onclick="claimOffer()">अभी लूटें (CLAIM NOW)</button>
-</div>
+        async function gen() {
+            const upi = document.getElementById('upi').value;
+            if(!upi.includes('@')) return alert("सही UPI डालें");
+            
+            const doc = await db.collection("users").add({
+                upi: upi,
+                offer: document.getElementById('offer').value,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
 
-<div class="footer">© 2026 LootCampaign - सभी अधिकार सुरक्षित</div>
-
-<script>
-    function claimOffer() {
-        alert("बधाई हो! आप इस डील के लिए पात्र हैं। अगला कदम फॉलो करें।");
-        // यहाँ आप अपना Telegram या पेमेंट लिंक डाल सकते हैं
-        window.location.href = "https://your-link-here.com";
-    }
-</script>
-
+            const url = window.location.origin + "/task.html?ref=" + doc.id;
+            document.getElementById('linkBox').style.display = "block";
+            document.getElementById('linkBox').innerText = "आपका लिंक: " + url;
+        }
+    </script>
 </body>
 </html>
