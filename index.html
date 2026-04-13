@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loot Campaign - Special Offer</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f4f4; margin: 0; text-align: center; }
+        .header { background: #ff4757; color: white; padding: 15px; font-size: 24px; font-weight: bold; }
+        .container { max-width: 500px; margin: 20px auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .product-img { width: 100%; border-radius: 10px; }
+        .price { color: #2ed573; font-size: 28px; font-weight: bold; margin: 10px 0; }
+        .old-price { text-decoration: line-through; color: #7f8c8d; font-size: 18px; }
+        .offer-tag { background: #ffa502; color: black; padding: 5px 10px; border-radius: 5px; font-size: 14px; display: inline-block; }
+        .btn-claim { background: #ff4757; color: white; border: none; padding: 15px 30px; font-size: 20px; width: 100%; border-radius: 5px; cursor: pointer; margin-top: 20px; font-weight: bold; }
+        .footer { margin-top: 20px; font-size: 12px; color: #7f8c8d; }
+    </style>
+</head>
+<body>
+
+<div class="header">आज की लूट डील! 🎁</div>
+
+<div class="container">
+    <div class="offer-tag">सीमित समय के लिए ऑफर</div>
+    <h2>Smart Watch Series 9</h2>
+    <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=1000" alt="Product" class="product-img">
+    
+    <div class="price">₹0 <span class="old-price">₹4,999</span></div>
+    <p>बस शिपिंग चार्ज भरें और अपनी घड़ी घर ले जाएं!</p>
+    
+    <button class="btn-claim" onclick="claimOffer()">अभी लूटें (CLAIM NOW)</button>
+</div>
+
+<div class="footer">© 2026 LootCampaign - सभी अधिकार सुरक्षित</div>
+
+<script>
+    function claimOffer() {
+        alert("बधाई हो! आप इस डील के लिए पात्र हैं। अगला कदम फॉलो करें।");
+        // यहाँ आप अपना Telegram या पेमेंट लिंक डाल सकते हैं
+        window.location.href = "https://your-link-here.com";
+    }
+</script>
+
+</body>
+</html>
