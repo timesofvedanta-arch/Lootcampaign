@@ -3,51 +3,183 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loot Campaign - Create</title>
+    <title>Loot Campaign - All-in-One</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <style>
-        :root { --p: #6a2195; }
-        body { background: var(--p); font-family: sans-serif; padding: 15px; margin: 0; }
-        .card { background: white; border-radius: 20px; padding: 20px; max-width: 400px; margin: auto; text-align: center; }
-        input, select { width: 90%; padding: 12px; margin: 10px 0; border: 2px solid var(--p); border-radius: 10px; }
-        button { background: var(--p); color: white; border: none; padding: 12px; width: 100%; border-radius: 25px; cursor: pointer; font-weight: bold; }
-        #linkBox { margin-top: 15px; color: var(--p); word-wrap: break-word; font-weight: bold; padding: 10px; border: 1px dashed var(--p); display: none; }
+        :root { --purple: #6a2195; --light-bg: #f3ebf7; }
+        body { background: var(--purple); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 10px; color: #333; }
+        .container { background: white; width: 100%; max-width: 420px; border-radius: 30px; padding: 20px; margin: 20px auto; box-sizing: border-box; text-align: center; position: relative; }
+        
+        /* UI Elements */
+        .tab-buttons { display: flex; justify-content: space-between; margin-bottom: 20px; gap: 10px; }
+        .btn-tab { background: var(--purple); color: white; border: none; padding: 12px; border-radius: 25px; flex: 1; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .btn-tab.secondary { background: var(--light-bg); color: var(--purple); }
+        .input-group { border: 2px solid var(--purple); border-radius: 12px; display: flex; align-items: center; margin-bottom: 15px; overflow: hidden; background: #fff; }
+        .input-icon { background: var(--purple); color: white; padding: 12px; font-weight: bold; }
+        input, select { border: none; padding: 12px; width: 100%; outline: none; font-size: 15px; }
+        .gen-btn { background: var(--purple); color: white; border: none; padding: 15px; width: 90%; border-radius: 30px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+
+        /* Report Page Stats */
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .stat-card { background: var(--light-bg); padding: 15px; border-radius: 15px; text-align: center; border: 1px solid #ddd; }
+        .stat-val { display: block; font-size: 18px; font-weight: bold; color: var(--purple); }
+
+        /* Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 100; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 25px; border-radius: 20px; width: 85%; max-width: 350px; text-align: center; }
+
+        /* Admin Table */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        .approve-btn { background: #28a745; color: white; border: none; padding: 5px; border-radius: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h2 style="color:var(--p)">Loot Campaign</h2>
-        <select id="offer">
-            <option value="AngelOne">AngelOne (Rs.175)</option>
-            <option value="Upstox">Upstox (Rs.200)</option>
-        </select>
-        <input type="text" id="upi" placeholder="अपनी UPI ID डालें (e.g. name@ybl)">
-        <button onclick="gen()">Generate Link</button>
-        <div id="linkBox"></div>
+
+<div class="container" id="mainPage">
+    <h2 style="color:var(--purple); margin-top:0;">Loot Campaign</h2>
+    <div class="tab-buttons">
+        <button class="btn-tab">Share & Earn</button>
+        <button class="btn-tab secondary" onclick="showPage('reportPage')">View Referrals</button>
     </div>
 
-    <script>
-        const firebaseConfig = { 
-            // PASTE_CONFIG_HERE
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+    <div style="text-align:left; font-weight:bold; margin-bottom:5px;">Select Campaign Offer</div>
+    <div class="input-group">
+        <select id="campaign">
+            <option value="AngelOne">AngelOne (Earn Rs.175/Refer)</option>
+            <option value="Upstox">Upstox (Earn Rs.200)</option>
+        </select>
+    </div>
 
-        async function gen() {
-            const upi = document.getElementById('upi').value;
-            if(!upi.includes('@')) return alert("सही UPI डालें");
-            
-            const doc = await db.collection("users").add({
-                upi: upi,
-                offer: document.getElementById('offer').value,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
+    <div style="background:var(--light-bg); padding:15px; border-radius:20px; margin-bottom:15px; border:1px dashed var(--purple);">
+        <p style="margin:0 0 10px 0;">Selected Campaign: <b id="selCamp">Aone</b></p>
+        <div style="display:flex; justify-content: space-around;">
+            <span>User: ₹<b id="uAmt">87</b></span>
+            <span>Refer: ₹<b id="rAmt">88</b></span>
+        </div>
+        <button onclick="document.getElementById('payoutModal').style.display='flex'" style="background:#ffcc00; border:none; padding:6px 15px; border-radius:12px; margin-top:10px; font-weight:bold; cursor:pointer;">Custom Amount</button>
+    </div>
 
-            const url = window.location.origin + "/task.html?ref=" + doc.id;
-            document.getElementById('linkBox').style.display = "block";
-            document.getElementById('linkBox').innerText = "आपका लिंक: " + url;
+    <div style="text-align:left; font-weight:bold; margin-bottom:5px;">Enter Your UPI ID</div>
+    <div class="input-group">
+        <div class="input-icon">>></div>
+        <input type="text" id="upiId" placeholder="example@ybl">
+    </div>
+
+    <button class="gen-btn" onclick="generateLink()">Generate Link</button>
+    <p onclick="showPage('adminLogin')" style="margin-top:20px; font-size:12px; color:#999; cursor:pointer;">Admin Login</p>
+</div>
+
+<div class="container" id="reportPage" style="display:none;">
+    <h2 style="color:var(--purple);">Conversion Report</h2>
+    <div style="text-align:left; background:#f9f9f9; padding:15px; border-radius:15px; border:1px solid #eee;">
+        <p><b>Refer UPI:</b> <span id="dispUpi" style="color:green;">---</span></p>
+        <p><b>User Cashback:</b> ₹<span id="dispU">87</span></p>
+        <p><b>Refer Cashback:</b> ₹<span id="dispR">88</span></p>
+    </div>
+    <div class="stat-grid">
+        <div class="stat-card">Total Earnings<br><span class="stat-val">₹0</span></div>
+        <div class="stat-card">Users Completed<br><span class="stat-val">0</span></div>
+        <div class="stat-card">Clicks on Link<br><span class="stat-val" style="color:blue;">0</span></div>
+        <div class="stat-card">Success Tasks<br><span class="stat-val" style="color:green;">0</span></div>
+    </div>
+    <button class="gen-btn" style="background:#666; margin-top:20px;" onclick="showPage('mainPage')">Back to Home</button>
+</div>
+
+<div class="container" id="adminLogin" style="display:none;">
+    <h3>Admin Access</h3>
+    <input type="password" id="adminPass" placeholder="Password डालें" style="border:2px solid var(--purple); border-radius:10px; padding:12px; width:80%;">
+    <button class="gen-btn" onclick="checkAdmin()">Login</button>
+    <button class="gen-btn" style="background:#666;" onclick="showPage('mainPage')">Cancel</button>
+</div>
+
+<div class="container" id="adminPanel" style="display:none; max-width:600px;">
+    <h3>Admin Dashboard (Manage Leads)</h3>
+    <div id="leadsList">Loading leads...</div>
+    <button class="gen-btn" onclick="showPage('mainPage')">Logout</button>
+</div>
+
+<div class="modal" id="payoutModal">
+    <div class="modal-content">
+        <h4>Edit Payout Amount</h4>
+        User: <input type="number" id="newUAmt" value="87" style="border:1px solid #ddd; margin-bottom:10px;">
+        Refer: <input type="number" id="newRAmt" value="88" style="border:1px solid #ddd;">
+        <button class="gen-btn" onclick="savePayout()">Update</button>
+    </div>
+</div>
+
+<script>
+    // --- FIREBASE SETUP ---
+    const firebaseConfig = {
+        // PASTE_FIREBASE_CONFIG_HERE
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // --- NAVIGATION ---
+    function showPage(id) {
+        document.querySelectorAll('.container').forEach(c => c.style.display = 'none');
+        document.getElementById(id).style.display = 'block';
+    }
+
+    // --- PAYOUT LOGIC ---
+    function savePayout() {
+        document.getElementById('uAmt').innerText = document.getElementById('newUAmt').value;
+        document.getElementById('rAmt').innerText = document.getElementById('newRAmt').value;
+        document.getElementById('payoutModal').style.display = 'none';
+    }
+
+    // --- GENERATE LINK ---
+    async function generateLink() {
+        const upi = document.getElementById('upiId').value;
+        if(!upi.includes('@')) return alert("Sahi UPI ID dale!");
+
+        const docRef = await db.collection("campaigns").add({
+            upi: upi,
+            userAmt: document.getElementById('uAmt').innerText,
+            referAmt: document.getElementById('rAmt').innerText,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        document.getElementById('dispUpi').innerText = upi;
+        document.getElementById('dispU').innerText = document.getElementById('uAmt').innerText;
+        document.getElementById('dispR').innerText = document.getElementById('rAmt').innerText;
+        
+        alert("Link Generated! Appki ID: " + docRef.id);
+        showPage('reportPage');
+    }
+
+    // --- ADMIN LOGIC ---
+    function checkAdmin() {
+        if(document.getElementById('adminPass').value === "Mk626425@") {
+            showPage('adminPanel');
+            loadLeads();
+        } else {
+            alert("Galat Password!");
         }
-    </script>
+    }
+
+    function loadLeads() {
+        db.collection("leads").onSnapshot(snap => {
+            let html = "<table><tr><th>User UPI</th><th>Status</th><th>Action</th></tr>";
+            snap.forEach(doc => {
+                const d = doc.data();
+                html += `<tr>
+                    <td>${d.userUpi}</td>
+                    <td>${d.status}</td>
+                    <td><button class="approve-btn" onclick="approveLead('${doc.id}')">Approve</button></td>
+                </tr>`;
+            });
+            document.getElementById('leadsList').innerHTML = html + "</table>";
+        });
+    }
+
+    async function approveLead(id) {
+        await db.collection("leads").doc(id).update({ status: "Approved" });
+        alert("Lead Approved!");
+    }
+</script>
+
 </body>
 </html>
